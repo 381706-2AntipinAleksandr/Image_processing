@@ -21,7 +21,6 @@ int main(int argc, char** argv)
 		namedWindow("Sourse image", WINDOW_AUTOSIZE);
 		imshow("Sourse image", Image);
 		waitKey(0);
-		//cvtColor(Image, Image2, COLOR_RGB2GRAY);
 		namedWindow("Result cv image ", WINDOW_AUTOSIZE);
 		imshow("Result cv image ", Image2);
 		waitKey(0);

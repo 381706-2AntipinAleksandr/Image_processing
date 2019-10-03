@@ -3,6 +3,8 @@
 GrayFilter::GrayFilter(cv::Mat bmp, int nomber) : Filter(bmp)
 {
 	this->nomber = nomber;
+	for (int i = 0; i < 256; i++)
+		hist[i] = 0;
 }
 
 cv::Mat GrayFilter::changeColor()
@@ -43,7 +45,9 @@ cv::Mat GrayFilter::changeColor()
 				break;
 			}
 			bmp.at<cv::Vec3b>(i, j) = color;
+			hist[bmp.at<cv::Vec3b>(i, j)[0]]++;
 		}
+	printHist();
 	return bmp;
 }
 
@@ -118,4 +122,10 @@ cv::Vec3b GrayFilter::changeColorLast(cv::Vec3b color)
 {
 	s_int weight = 0.2952 * color[0] + 0.5547 * color[1] + 0.148 * color[2];
 	return cv::Vec3b(weight, weight, weight);
+}
+
+void GrayFilter::printHist()
+{
+	for (int i = 0; i < 256; i++)
+		printf("weight %d - %d,\t", i, hist[i]);
 }
