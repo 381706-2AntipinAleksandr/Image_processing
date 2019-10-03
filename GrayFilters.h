@@ -15,6 +15,7 @@
 class GrayFilter : public Filter
 {
 	int nomber;
+	std::array<int, 256> hist;
 public:
 	GrayFilter() : Filter() {};
 	GrayFilter(cv::Mat bmp, int nomber);
@@ -28,4 +29,5 @@ public:
 	cv::Vec3b changeColorMax(cv::Vec3b color);
 	cv::Vec3b changeColorMin(cv::Vec3b color);
 	cv::Vec3b changeColorLast(cv::Vec3b color);
+	void printHist();
 };
