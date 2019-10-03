@@ -3,6 +3,7 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui.hpp"
 #include "Filter.h"
+#include "GrayFilters.h"
 
 using namespace cv;
 
@@ -12,14 +13,29 @@ int main(int argc, char** argv)
 	{
 		std::string sourse = argv[1];
 		std::string typeOfFilter = argv[2];
-		Mat Image = imread(sourse, 0);
-		Mat Image2 = Image;
-		namedWindow("Display Window", WINDOW_AUTOSIZE);
-		imshow("Display Window", Image);
+		Mat Image = imread(sourse, 1);
+		Mat Images[8];
+		Mat Image2 = imread(sourse, 1);
+		GrayFilter filt(Image2, 0);
+		Image2 = filt.changeColor();
+		namedWindow("Sourse image", WINDOW_AUTOSIZE);
+		imshow("Sourse image", Image);
 		waitKey(0);
-		cvtColor(Image, Image2, COLOR_BGR2GRAY);
-		imshow("Display Window", Image2);
+		//cvtColor(Image, Image2, COLOR_RGB2GRAY);
+		namedWindow("Result cv image ", WINDOW_AUTOSIZE);
+		imshow("Result cv image ", Image2);
 		waitKey(0);
+		for (int i = 0; i < 8; i++)
+		{
+			Images[i] = imread(sourse, 1);
+			Filter* filter = new GrayFilter(Images[i], i + 1);
+			filter->changeColor();
+			delete filter;
+			namedWindow("Result image ", WINDOW_AUTOSIZE);
+			imshow("Result Window ", Images[i]);
+			waitKey(0);
+		}
+
 	}
 	catch (const std::exception&)
 	{
