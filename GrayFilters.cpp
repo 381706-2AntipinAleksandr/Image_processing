@@ -3,8 +3,18 @@
 GrayFilter::GrayFilter(cv::Mat bmp, int nomber) : Filter(bmp)
 {
 	this->nomber = nomber;
-	for (int i = 0; i < 256; i++)
-		hist[i] = 0;
+	mW = 0;
+	dis = 0;
+}
+
+double GrayFilter::getMatWait()
+{
+    return mW;
+}
+
+double GrayFilter::getDispersion()
+{
+    return dis;
 }
 
 cv::Mat GrayFilter::changeColor()
@@ -45,8 +55,10 @@ cv::Mat GrayFilter::changeColor()
 				break;
 			}
 			bmp.at<cv::Vec3b>(i, j) = color;
-			hist[bmp.at<cv::Vec3b>(i, j)[0]]++;
+			mW += (color[0] + color[1] + color[2]) / 3;
 		}
+	mW /= bmp.rows * bmp.cols;
+	disFunction();
 	printHist();
 	return bmp;
 }
@@ -124,8 +136,19 @@ cv::Vec3b GrayFilter::changeColorLast(cv::Vec3b color)
 	return cv::Vec3b(weight, weight, weight);
 }
 
+double GrayFilter::disFunction()
+{
+	for (int i = 0; i < bmp.rows; i++)
+		for (int j = 0; j < bmp.cols; j++)
+			dis += pow((bmp.at<cv::Vec3b>(i, j)[0] + bmp.at<cv::Vec3b>(i, j)[1] + bmp.at<cv::Vec3b>(i, j)[2]) / 3 - mW, 2);
+	dis /= bmp.rows * bmp.cols;
+	dis = sqrt(dis);
+	return dis;
+}
+
 void GrayFilter::printHist()
 {
-	for (int i = 0; i < 256; i++)
-		printf("weight %d - %d,\t", i, hist[i]);
+	printf("Mat wait - %lf\n", mW);
+	printf("Dispersion - %lf\n", dis);
+	printf("--------------------------------------------------\n");
 }

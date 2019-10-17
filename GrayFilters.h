@@ -15,10 +15,13 @@
 class GrayFilter : public Filter
 {
 	int nomber;
-	std::array<int, 256> hist;
+    double mW;
+	double dis;
 public:
 	GrayFilter() : Filter() {};
 	GrayFilter(cv::Mat bmp, int nomber);
+    double getMatWait();
+    double getDispersion();
 	cv::Mat changeColor() override;
 	cv::Mat changeColorOpencv();
 	cv::Vec3b changeColorAverage(cv::Vec3b color);
@@ -29,5 +32,6 @@ public:
 	cv::Vec3b changeColorMax(cv::Vec3b color);
 	cv::Vec3b changeColorMin(cv::Vec3b color);
 	cv::Vec3b changeColorLast(cv::Vec3b color);
+	double disFunction();
 	void printHist();
 };
