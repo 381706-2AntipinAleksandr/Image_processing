@@ -8,20 +8,39 @@
 #include <stdio.h>
 #include <stdlib.h> 
 #include <time.h> 
+#include <math.h>
 
 
 #define FIXELCOUNT 0.05
 
 using namespace cv;
 
-void covFuncion(double& cov, double* mW, int i1, int i2, Mat a, Mat b)
+long long factorial(int number)
+{
+    if (number == 1)
+        return 1;
+    else
+        return number * factorial(number - 1);
+}
+
+void covFuncion(double& cov, double* mW, int i1, int i2, Mat& a, Mat& b)
 {
 	for (int i = 0; i < a.rows; i++)
 		for (int j = 0; j < a.cols; j++)
 			cov = ((a.at<cv::Vec3b>(i, j)[0] + a.at<cv::Vec3b>(i, j)[1] + a.at<cv::Vec3b>(i, j)[2] / 3) - mW[i1]) * 
 			((b.at<cv::Vec3b>(i, j)[0] + b.at<cv::Vec3b>(i, j)[1] + b.at<cv::Vec3b>(i, j)[2] / 3) - mW[i2]);
 	cov = sqrt(cov);
-    
+}
+
+double covFuncion1(int& mW1, int& mW2, Mat& a, Mat& b)
+{
+    double cov = 0;
+    for (int i = 0; i < a.rows; i++)
+        for (int j = 0; j < a.cols; j++)
+            cov = ((a.at<cv::Vec3b>(i, j)[0] + a.at<cv::Vec3b>(i, j)[1] + a.at<cv::Vec3b>(i, j)[2] / 3) - mW1) *
+            ((b.at<cv::Vec3b>(i, j)[0] + b.at<cv::Vec3b>(i, j)[1] + b.at<cv::Vec3b>(i, j)[2] / 3) - mW2);
+    cov = sqrt(cov);
+    return cov;
 }
 
 void ssimFunctuon(double& cov, double& ssim, double* mW, double* dis, int i1, int i2)
@@ -84,10 +103,12 @@ void noise(std::string sourse)
     waitKey(0);
     int count = FIXELCOUNT * Image.rows * Image.cols;
     s_int tmp = 5;
+    int brightness = 0;
     for (int i = 0; i < Image.rows; ++i)
         for (int j = 0; j < Image.cols; ++j)
         {
-            tmp = rand() % 40;
+            ////////////////////////////////////////////////////////////////////
+            /*tmp = rand() % 40;
             if (count != 0 && tmp == 0)
             {
                 Image.at<cv::Vec3b>(i, j)[0] = 0;
@@ -103,17 +124,55 @@ void noise(std::string sourse)
                 --count;
             }
             else
-                continue;
+                continue;*/
+            /////////////////////////////////////////////////////////////////////
+            char tmp = rand() % 255;
+            brightness += (Image.at<cv::Vec3b>(i, j)[0] + Image.at<cv::Vec3b>(i, j)[1] + Image.at<cv::Vec3b>(i, j)[2]) / 3;
+            int a = 4, b = 4;
+            int fact = factorial(b - 1);
+            double p = (pow(a, b) * pow(tmp, b - 1)) / fact * exp(-a * tmp);
+            //std::cout << p << "\n";
+            if (p > exp(-50))
+            {
+                Image.at<cv::Vec3b>(i, j)[0] = 255;
+                Image.at<cv::Vec3b>(i, j)[1] = 255;
+                Image.at<cv::Vec3b>(i, j)[2] = 255;
+            }
         }
-    namedWindow("SaP", WINDOW_AUTOSIZE);
-    imshow("Sap", Image);
+    brightness /= Image.rows * Image.cols;
+    std::cout << "Mat wait origin - " << brightness << std::endl;
+    double dis = 0;
+    for (int i = 0; i < Image.rows; i++)
+        for (int j = 0; j < Image.cols; j++)
+            dis += pow((Image.at<cv::Vec3b>(i, j)[0] + Image.at<cv::Vec3b>(i, j)[1] + Image.at<cv::Vec3b>(i, j)[2]) / 3 - brightness, 2);
+    dis /= Image.rows * Image.cols;
+    dis = sqrt(dis);
+    std::cout << "Dispersion origin - " << dis << std::endl;
+    namedWindow("Gamma", WINDOW_AUTOSIZE);
+    imshow("Gamma", Image);
     waitKey(0);
-
-    Filter* f = new MedianFilter(Image, 1);
+    Mat ImageOut;
+    medianBlur(Image, ImageOut, 7);
+    namedWindow("Median Filter CV", WINDOW_AUTOSIZE);
+    imshow("Median Filter CV", ImageOut);
+    waitKey(0);
+    Mat originImage = Image;
+    MedianFilter* f = new MedianFilter(Image, 1);
     f->changeColor();
+    f->outMetrics();
+    int mWN = f->getMW();
+    double disN = f->getDispersion();
+    double covN = covFuncion1(brightness, mWN, originImage, Image);
+    double ssim = 0.0;
+    double masW[] = { brightness, mWN };
+    double masD[] = { dis, disN };
+    ssimFunctuon(covN, ssim, masW, masD, 0, 1);
+    std::cout << "Cov - " << covN << std::endl;
+    std::cout << "SSIM - " << ssim << std::endl;
     namedWindow("Median Filter", WINDOW_AUTOSIZE);
     imshow("Median Filter", Image);
     waitKey(0);
+    delete f;
 }
 
 
