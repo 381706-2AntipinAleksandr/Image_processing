@@ -1,24 +1,19 @@
-//#include "Filter.h"
-//
-//using namespace System;
-//using namespace System::Windows::Forms;
-//
-//
-//Filter::Filter()
-//{
-//	bmp = nullptr;
-//}
-//
-//Filter::Filter(Bitmap^ bmp)
-//{
-//	this->bmp = bmp;
-//}
-//
-//Filter::~Filter()
-//{
-//}
-//
-//Bitmap^ Filter::changeColor()
-//{
-//	return nullptr;
-//}
+#include "Filter.h"
+
+Filter::Filter()
+{
+}
+
+Filter::Filter(cv::Mat bmp)
+{
+	this->bmp = bmp;
+}
+
+Filter::~Filter()
+{
+}
+
+cv::Mat Filter::changeColor()
+{
+	return cv::Mat(0, 0, 0);
+}
