@@ -75,12 +75,12 @@ void MedianFilter::outMetrics()
     printf("Dispersion new - %f\n", dis);
 }
 
-int MedianFilter::getMW()
-{
-    return mW;
-}
+int MedianFilter::getMW(){
+    return mW; }
 
-double MedianFilter::getDispersion()
-{
-    return dis;
-}
+
+double MedianFilter::getDispersion(){
+    return dis; }
+
+
+

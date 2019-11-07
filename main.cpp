@@ -5,6 +5,7 @@
 #include "Filter.h"
 #include "GrayFilters.h"
 #include "MedianF.h"
+#include "MidPointF.h"
 #include <stdio.h>
 #include <stdlib.h> 
 #include <time.h> 
@@ -49,30 +50,30 @@ void ssimFunctuon(double& cov, double& ssim, double* mW, double* dis, int i1, in
         ((mW[i1] * mW[i1] + mW[i2] * mW[i2] + 2.55 * 2.55) * (dis[i1] * dis[i1] + dis[i2] * dis[i2] + 7.65 * 7.65));
 }
 
-void grayFilter(std::string sourse)
+void grayFilter(std::string source)
 {
 	double cov = 0;
     double ssim = 0;
 	double mW[8];
     double dis[8];
-	Mat Image = imread(sourse, 1);
+	Mat Image = imread(source, 1);
 	Mat Images[8];
-	Mat Image2 = imread(sourse, 1);
+	Mat Image2 = imread(source, 1);
 	GrayFilter filt(Image2, 0);
 	Image2 = filt.changeColor();
-	namedWindow("Sourse image", WINDOW_AUTOSIZE);
-	imshow("Sourse image", Image);
+	namedWindow("Source image", WINDOW_AUTOSIZE);
+	imshow("Source image", Image);
 	waitKey(0);
 	namedWindow("Result cv image ", WINDOW_AUTOSIZE);
 	imshow("Result cv image ", Image2);
 	waitKey(0);		
     for (int i = 0; i < 8; i++)
 	{
-		Images[i] = imread(sourse, 1);
+		Images[i] = imread(source, 1);
 		GrayFilter* filter = new GrayFilter(Images[i], i + 1);
 		filter->changeColor();
 		mW[i] = filter->getMatWait();
-        dis[i] = filter->getDispersion();
+    dis[i] = filter->getDispersion();
 		delete filter;
 		namedWindow("Result image ", WINDOW_AUTOSIZE);
 		imshow("Result Window ", Images[i]);
@@ -95,11 +96,11 @@ void grayFilter(std::string sourse)
     }
 }
 
-void noise(std::string sourse)
+void noise(std::string source, int blurType)
 {
-    Mat Image = imread(sourse, 1);
-    namedWindow("Sourse image", WINDOW_AUTOSIZE);
-    imshow("Sourse image", Image);
+    Mat Image = imread(source, 1);
+    namedWindow("Source image", WINDOW_AUTOSIZE);
+    imshow("Source image", Image);
     waitKey(0);
     int count = FIXELCOUNT * Image.rows * Image.cols;
     s_int tmp = 5;
@@ -139,6 +140,7 @@ void noise(std::string sourse)
                 Image.at<cv::Vec3b>(i, j)[2] = 255;
             }
         }
+    
     brightness /= Image.rows * Image.cols;
     std::cout << "Mat wait origin - " << brightness << std::endl;
     double dis = 0;
@@ -151,10 +153,16 @@ void noise(std::string sourse)
     namedWindow("Gamma", WINDOW_AUTOSIZE);
     imshow("Gamma", Image);
     waitKey(0);
-    Mat ImageOut;
-    medianBlur(Image, ImageOut, 7);
-    namedWindow("Median Filter CV", WINDOW_AUTOSIZE);
-    imshow("Median Filter CV", ImageOut);
+    Mat ImageOut, CopyImage = Image;
+    if (blurType == 0) {
+      medianBlur(Image, ImageOut, 7);
+      namedWindow("Median Filter CV", WINDOW_AUTOSIZE);
+      imshow("Median Filter CV", ImageOut);
+    } else if (blurType == 1) {
+      MidPointFilter* tmpPic = new MidPointFilter(CopyImage, 1);
+      namedWindow("MidPoint Filter", WINDOW_AUTOSIZE);
+      imshow("MidPoint Filter", tmpPic->changeColor());
+    }
     waitKey(0);
     Mat originImage = Image;
     MedianFilter* f = new MedianFilter(Image, 1);
@@ -181,16 +189,18 @@ int main(int argc, char** argv)
     srand(time(NULL));
 	try
 	{
-		std::string sourse = argv[1];
+		std::string source = argv[1];
 		std::string typeOfFilter = argv[2];
-        if (typeOfFilter == "Gray")
-            grayFilter(sourse);
-        else if (typeOfFilter == "Noises")
-            noise(sourse);
+    if (typeOfFilter == "Gray")
+      grayFilter(source);
+    else if (typeOfFilter == "Noises")
+      noise(source, 0);
+    else if (typeOfFilter == "MidPoint")
+      noise(source, 1);
 	}
 	catch (const std::exception&)
 	{
-		std::cout << "Error! Wrong image sourse or type of filter" << std::endl;
+		std::cout << "Error! Wrong image source or type of filter" << std::endl;
 	}
 
 	/////////////////////////////////////////////
